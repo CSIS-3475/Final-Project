@@ -47,6 +47,9 @@ public class Database {
             case "show_dbs" :
                 showDbs();
                 break;
+            case "use_db" :
+                useDb(matches.group(3));
+                break;
             default: System.out.println("Unknown query: [ " + query + " ]");
         }
 
@@ -91,5 +94,18 @@ public class Database {
         }
     }
 
+    private static void useDb(String name){
+        String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
 
+        for (String dir : directories){
+            if (dir.equals(name)){
+                System.out.println("Database " + name + "is in use");
+                activeDbName = name;
+            }
+            else{
+                System.out.println("Database " + name + " is not found");
+            }
+        }
+
+    }
 }

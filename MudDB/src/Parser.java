@@ -12,18 +12,23 @@ public class Parser {
 
         Map<String, Matcher> parsedObj = new HashMap<>();
 
-        // Regex patterns
+        // 1) Regex patterns
         Pattern showDbsPattern = Pattern.compile("(show)\\s*(dbs)");
         Pattern createDbPattern = Pattern.compile("(create)\\s*(db)\\s*(\\w.*)");
+        Pattern useDbPattern = Pattern.compile("(use)\\s*(db)\\s*(\\w.*)");
 
-        // Matchers
+        // 2) Matchers
         Matcher showDbsMatcher = showDbsPattern.matcher(query);
         Matcher createDbMatcher = createDbPattern.matcher(query);
+        Matcher useDbMatcher = useDbPattern.matcher(query);
 
+        // 3) Create object for response
         if (showDbsMatcher.matches()) {
             parsedObj.put("show_dbs" , showDbsMatcher);
         } else if (createDbMatcher.matches()) {
             parsedObj.put("create_db" , createDbMatcher);
+        } else if(useDbMatcher.matches()){
+            parsedObj.put("use_db", useDbMatcher);
         }
 
         return parsedObj;
