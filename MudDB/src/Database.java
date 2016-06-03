@@ -50,6 +50,9 @@ public class Database {
             case "use_db" :
                 useDb(matches.group(3));
                 break;
+            case "drop_db" :
+                dropDb(matches.group(3));
+                break;
             default: System.out.println("Unknown query: [ " + query + " ]");
         }
 
@@ -99,13 +102,41 @@ public class Database {
 
         for (String dir : directories){
             if (dir.equals(name)){
-                System.out.println("Database " + name + "is in use");
+                System.out.println("Database " + name + " is in use");
                 activeDbName = name;
             }
             else{
-                System.out.println("Database " + name + " is not found");
+                System.out.println("Database '" + name + "' was not found");
             }
         }
-
     }
+
+    public static void dropDb(String name) {
+        String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
+
+        if (directories != null) {
+            for (String dir : directories) {
+                if (dir.equals(name)) {
+                    File curFile = new File(CONSTANT.DEFAULT_PATH, name);
+                    File[] contents = curFile.listFiles();
+                    if (contents != null) {
+                        for (File f : contents) {
+                            f.delete();
+                        }
+                    }
+                    curFile.delete();
+                    System.out.println("Database '" + name + "' was successfully deleted");
+
+                }
+                if (dir.lastIndexOf(name) == -1) {
+                    System.out.println("Database with name '" + name + "' was not found!");
+                }
+            }
+        }
+        else if (directories == null){
+            System.out.println("No databases were found!"); // not working
+        }
+    }
+
 }
+
