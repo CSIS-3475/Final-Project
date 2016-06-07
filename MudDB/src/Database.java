@@ -99,7 +99,7 @@ public class Database {
 
         for (String dir : directories){
             if (dir.equals(name)){
-                System.out.println("Database " + name + "is in use");
+                System.out.println("Database " + name + " is in use");
                 activeDbName = name;
             }
             else{
