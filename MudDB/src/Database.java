@@ -97,16 +97,16 @@ public class Database {
         }
     }
 
-    private static void useDb(String name){
+    private static void useDb(String dbName){
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
 
         for (String dir : directories){
-            if (dir.equals(name)){
-                System.out.println("Database " + name + " is in use");
-                activeDbName = name;
+            if (dir.equals(dbName)){
+                System.out.println("Database " + dbName + " is in use");
+                activeDbName = dbName;
             }
             else{
-                System.out.println("Database '" + name + "' was not found");
+                System.out.println("Database <" + dbName + "> was not found");
             }
         }
     }
@@ -126,11 +126,11 @@ public class Database {
                         }
                     }
                     curFile.delete();
-                    System.out.println("Database '" + dbName + "' was successfully deleted");
+                    System.out.println("Database <" + dbName + "> was successfully deleted");
 
                 }
                 if (dir.lastIndexOf(dbName) == -1) {
-                    System.out.println("Database with name '" + dbName + "' was not found!");
+                    System.out.println("Database with name <" + dbName + "> was not found!");
                 }
             }
         }
