@@ -50,6 +50,9 @@ public class Database {
             case "use_db" :
                 useDb(matches.group(3));
                 break;
+            case "drop_db" :
+                dropDb(matches.group(3));
+                break;
             default: System.out.println("Unknown query: [ " + query + " ]");
         }
 
@@ -94,18 +97,47 @@ public class Database {
         }
     }
 
-    private static void useDb(String name){
+    private static void useDb(String dbName){
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
 
         for (String dir : directories){
-            if (dir.equals(name)){
-                System.out.println("Database " + name + " is in use");
-                activeDbName = name;
+            if (dir.equals(dbName)){
+                System.out.println("Database " + dbName + " is in use");
+                activeDbName = dbName;
             }
             else{
-                System.out.println("Database " + name + " is not found");
+                System.out.println("Database <" + dbName + "> was not found");
             }
         }
-
     }
+
+    public static void dropDb(String dbName) {
+
+        String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
+
+        if (directories.length != 0) {
+            for (String dir : directories) {
+                if (dir.equals(dbName)) {
+                    File curFile = new File(CONSTANT.DEFAULT_PATH, dbName);
+                    File[] contents = curFile.listFiles();
+                    if (contents != null) {
+                        for (File f : contents) {
+                            f.delete();
+                        }
+                    }
+                    curFile.delete();
+                    System.out.println("Database <" + dbName + "> was successfully deleted");
+
+                }
+                if (dir.lastIndexOf(dbName) == -1) {
+                    System.out.println("Database with name <" + dbName + "> was not found!");
+                }
+            }
+        }
+        else {
+            System.out.println("No databases were found!"); // not working
+        }
+    }
+
 }
+
