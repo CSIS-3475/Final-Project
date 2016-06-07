@@ -111,13 +111,14 @@ public class Database {
         }
     }
 
-    public static void dropDb(String name) {
+    public static void dropDb(String dbName) {
+
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
 
-        if (directories != null) {
+        if (directories.length != 0) {
             for (String dir : directories) {
-                if (dir.equals(name)) {
-                    File curFile = new File(CONSTANT.DEFAULT_PATH, name);
+                if (dir.equals(dbName)) {
+                    File curFile = new File(CONSTANT.DEFAULT_PATH, dbName);
                     File[] contents = curFile.listFiles();
                     if (contents != null) {
                         for (File f : contents) {
@@ -125,15 +126,15 @@ public class Database {
                         }
                     }
                     curFile.delete();
-                    System.out.println("Database '" + name + "' was successfully deleted");
+                    System.out.println("Database '" + dbName + "' was successfully deleted");
 
                 }
-                if (dir.lastIndexOf(name) == -1) {
-                    System.out.println("Database with name '" + name + "' was not found!");
+                if (dir.lastIndexOf(dbName) == -1) {
+                    System.out.println("Database with name '" + dbName + "' was not found!");
                 }
             }
         }
-        else if (directories == null){
+        else {
             System.out.println("No databases were found!"); // not working
         }
     }
