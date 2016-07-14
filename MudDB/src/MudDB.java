@@ -16,6 +16,19 @@ public class MudDB {
 
         db.connect();
 
+
+
+        db.runQuery("use db dim");
+        //db.runQuery("create table test fields f_name string, l_name string, age int");
+
+       /* db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
+        db.runQuery("insert into test f_name=Eugene");
+        db.runQuery("insert into test f_name=Sean, class=CSIS3450");*/
+        db.runQuery("select * from test where age=318");
+        //db.runQuery("select * from test");
+        //db.runQuery("select * from test where age=34s");
+
+
         do {
 
             cmd = getInput();
@@ -24,8 +37,6 @@ public class MudDB {
                 System.out.println(c.PROJECT_NAME + "> " + cmd);
 
                 db.runQuery(cmd);
-
-
 
             } else {
                 done = true;

@@ -1,6 +1,9 @@
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.*;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -12,7 +15,7 @@ public class Database {
     private static Constants CONSTANT = new Constants();
     private static DatabaseService dbService = new DatabaseService();
 
-    private static void createDB(String dbName){
+   /* private static void createDB(String dbName){
         File theDir = new File(CONSTANT.DEFAULT_PATH + "/" + dbName);
 
         if (!theDir.exists()) {
@@ -26,7 +29,7 @@ public class Database {
         } else {
             System.out.println("Warning: Database <" + dbName + "> is already exists.");
         }
-    }
+    }*/
 
 
     public static void runQuery(String query){
@@ -35,8 +38,12 @@ public class Database {
 
         parsedObj = qp.getQueryCommandIndex(query);
 
+
+
+        //System.out.println(query + "  =  " + parsedObj.toString());
+
         // Get action and matches from parsed query
-        Map.Entry<String,Matcher> entry=parsedObj.entrySet().iterator().next();
+        Map.Entry<String,Matcher> entry = parsedObj.entrySet().iterator().next();
         String action = entry.getKey();
         Matcher matches = entry.getValue();
 
@@ -52,6 +59,21 @@ public class Database {
                 break;
             case "drop_db" :
                 dropDb(matches.group(3));
+                break;
+            case "create_table" :
+                createTable(matches.group(3), matches.group(5));
+                break;
+            case "insert_into_table" :
+                insertIntoTable(matches.group(3), matches.group(4));
+                break;
+            case "select_from_table" :
+                String whereCondition = null;
+                try {
+                    whereCondition = matches.group(6);
+                } catch (Exception e){
+
+                }
+                selectFromTable(matches.group(2), matches.group(4), whereCondition);
                 break;
             default: System.out.println("Unknown query: [ " + query + " ]");
         }
@@ -102,7 +124,7 @@ public class Database {
 
         for (String dir : directories){
             if (dir.equals(dbName)){
-                System.out.println("Database " + dbName + " is in use");
+                System.out.println("Database <" + dbName + "> is in use");
                 activeDbName = dbName;
             }
             else{
@@ -129,7 +151,7 @@ public class Database {
                     System.out.println("Database <" + dbName + "> was successfully deleted");
 
                 }
-                if (dir.lastIndexOf(dbName) == -1) {
+                else if (dir.lastIndexOf(dbName) == -1) {
                     System.out.println("Database with name <" + dbName + "> was not found!");
                 }
             }
@@ -137,6 +159,198 @@ public class Database {
         else {
             System.out.println("No databases were found!"); // not working
         }
+    }
+
+    private static void createTable(String tblName, String fields){
+
+        if (activeDbName != null) {
+            String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
+            File theDir = new File(dirName);
+
+            if (theDir.exists()) {
+                try {
+
+                    // Create table file
+                    PrintWriter writer = null;
+                    try {
+                        writer = new PrintWriter(dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX, "UTF-8");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    writer.close();
+
+                    // Create table meta file
+                    PrintWriter writer_meta = null;
+                    try {
+                        writer_meta = new PrintWriter(dirName + "/" + tblName + Constants.TABLE_META_SUFFIX + Constants.JSON_SUFFIX, "UTF-8");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    Parser p = new Parser();
+                    writer_meta.println(p.parseFields(fields));
+                    writer_meta.close();
+
+                    System.out.println("Table <" + tblName + "> has been created");
+                } catch (SecurityException se) {
+                    System.out.println("ERROR: " + se.toString());
+                }
+            } else {
+                System.out.println("Warning: Table <" + tblName + "> is already exists.");
+            }
+        } else {
+            System.out.println("Warning: No database selected.");
+        }
+    }
+
+    private static void insertIntoTable(String tblName, String fieldsData){
+
+        if (activeDbName != null) {
+            String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
+            File theDir = new File(dirName);
+            String fileName = dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX;
+
+            if (!theDir.exists()) {
+                createTable(tblName, fieldsData);
+            }
+
+            //if (theDir.exists()) {
+
+
+                try(FileWriter fw = new FileWriter(fileName, true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    PrintWriter out = new PrintWriter(bw))
+                {
+                    Parser p = new Parser();
+                    out.println(p.parseInsertingData(activeDbName, tblName, fieldsData));
+                    out.close();
+                } catch (IOException e) {
+                    //exception handling left as an exercise for the reader
+                }
+
+
+
+               /* try {
+                    Parser p = new Parser();
+                    Files.write(Paths.get(fileName), p.parseInsertingData(activeDbName, tblName, fieldsData).getBytes(), StandardOpenOption.APPEND);
+                }catch (IOException e) {
+                    //exception handling left as an exercise for the reader
+                    System.out.println("ERROR: Incorrect data or syntax");
+                }*/
+/*            } else {
+                System.out.println("ERROR: Table <" + tblName + "> doesn't exist.");
+            }*/
+        } else {
+            System.out.println("Warning: No database selected.");
+        }
+    }
+
+    private static void selectFromTable(String fieldsData, String tblName, String whereCondition){
+
+        //System.out.println("where is " + whereCondition);
+
+        fieldsData = fieldsData.trim();
+
+        ArrayList<String> result = new ArrayList<>();
+        List<String> fields = null;
+
+        if (fieldsData.equals("*")) {
+        } else {
+            fields = Arrays.asList(fieldsData.split(","));
+        }
+
+        result = readFromTableFile(tblName, fields, whereCondition);
+
+        outputResultOfSelection(result);
+
+    }
+
+    private static void outputResultOfSelection(ArrayList<String> result){
+        System.out.println(result.toString());
+    }
+
+    private static ArrayList<String> readFromTableFile(String tblName, List<String> fieldsData, String whereCondition) {
+        String[] whereConditionArray;
+        String whereKey = "";
+        String whereValue = "";
+        Boolean skipRow;
+
+        // The name of the file to open.
+        String fileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.JSON_SUFFIX;
+
+        // This will reference one line at a time
+        String line = null;
+        ArrayList<String> result = new ArrayList<>();
+       // HashMap<String, ArrayList<String>> result = new HashMap<>();
+
+        if (whereCondition != null && whereCondition.length() > 0) {
+            whereConditionArray = whereCondition.split("=");
+            whereKey = whereConditionArray[0];
+            whereValue = whereConditionArray[1];
+        }
+
+
+        try {
+            // FileReader reads text files in the default encoding.
+            FileReader fileReader = new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                skipRow = false;
+
+                //row = new ArrayList<>();
+                JSONParser parser = new JSONParser();
+
+                //convert from JSON string to JSONObject
+                JSONObject newJObject = null;
+                try {
+                    newJObject = (JSONObject) parser.parse(line);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+               // System.out.println("+++" + whereValue + " - -" + (newJObject.get(whereKey).toString() != whereValue));
+
+                if (whereCondition != null && whereCondition.length()>0 && whereKey.length()>0) {
+                    if (newJObject.get(whereKey) == null || ( newJObject.get(whereKey) != null && !whereValue.equals(newJObject.get(whereKey).toString()) )) {
+                        skipRow = true;
+                    }
+                }
+
+                if (!skipRow) {
+                    if (fieldsData != null) {
+                        JSONObject tmpJSON = new JSONObject();
+                        for (String f : fieldsData) {
+                            f = f.trim();
+                            if (newJObject.get(f) != null) {
+                                tmpJSON.put(f, newJObject.get(f));
+                            }
+                        }
+                        newJObject = tmpJSON;
+                    }
+
+                    result.add(newJObject.toJSONString());
+                }
+
+            }
+
+            // Always close files.
+            bufferedReader.close();
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open table '" + tblName + "'");
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading table '" + tblName + "'");
+        }
+
+        return result;
     }
 
 }
