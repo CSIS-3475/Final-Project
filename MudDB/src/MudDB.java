@@ -26,10 +26,11 @@ public class MudDB {
         db.runQuery("insert into test f_name=Sean, class=CSIS3450");*/
         db.runQuery("select * from test where age=318");
         //db.runQuery("select * from test");
-        //db.runQuery("select * from test where age=34s");
+        db.runQuery("select * from test where age=3");
+        db.runQuery("update test set  class=null");
 
 
-        do {
+        /*do {
 
             cmd = getInput();
 
@@ -41,7 +42,7 @@ public class MudDB {
             } else {
                 done = true;
             }
-        } while (!done);
+        } while (!done);*/
 
         db.disconnect();
     }

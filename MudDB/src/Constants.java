@@ -10,5 +10,7 @@ public class Constants {
     public static String TABLE_SUFFIX = "_data";
     public static String TABLE_META_SUFFIX = "_meta";
     public static String JSON_SUFFIX = ".json";
+    public static String TEMP_TABLE_FILE_SUFFIX = ".LOCK";
+    public static String $_ID = "_$id";
 
 }

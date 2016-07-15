@@ -33,6 +33,7 @@ public class Database {
 
 
     public static void runQuery(String query){
+        String whereCondition;
         Parser qp = new Parser();
         Map<String, Matcher> parsedObj = new HashMap<>();
 
@@ -67,13 +68,22 @@ public class Database {
                 insertIntoTable(matches.group(3), matches.group(4));
                 break;
             case "select_from_table" :
-                String whereCondition = null;
+                whereCondition = null;
                 try {
                     whereCondition = matches.group(6);
                 } catch (Exception e){
 
                 }
                 selectFromTable(matches.group(2), matches.group(4), whereCondition);
+                break;
+            case "update_table" :
+                whereCondition = null;
+                try {
+                    whereCondition = matches.group(6);
+                } catch (Exception e){
+
+                }
+                updateTable(matches.group(4), matches.group(2), whereCondition);
                 break;
             default: System.out.println("Unknown query: [ " + query + " ]");
         }
@@ -273,6 +283,115 @@ public class Database {
         System.out.println(result.toString());
     }
 
+    private static void updateTable(String fieldsData, String tblName, String whereCondition){
+
+        fieldsData = fieldsData.trim();
+        tblName = tblName.trim();
+        whereCondition = whereCondition != null ? whereCondition.trim() : null;
+
+        List<String> fields = Arrays.asList(fieldsData.split(","));
+
+        String[] whereConditionArray;
+        String whereKey = "";
+        String whereValue = "";
+        Boolean skipRow;
+
+        // The name of the file to open.
+        String fileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.JSON_SUFFIX;
+        String lockFileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.TEMP_TABLE_FILE_SUFFIX;
+
+        // This will reference one line at a time
+        String line = null;
+        ArrayList<String> result = new ArrayList<>();
+
+        if (whereCondition != null && whereCondition.length() > 0) {
+            whereConditionArray = whereCondition.split("=");
+            whereKey = whereConditionArray[0];
+            whereValue = whereConditionArray[1];
+        }
+
+        try {
+            // FileReader reads text files in the default encoding.
+            FileWriter lockedFileReader = new FileWriter(lockFileName);
+            FileReader fileReader = new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                skipRow = false;
+
+                //row = new ArrayList<>();
+                JSONParser parser = new JSONParser();
+
+                //convert from JSON string to JSONObject
+                JSONObject newJObject = null;
+                try {
+                    newJObject = (JSONObject) parser.parse(line);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                if (whereCondition != null && whereCondition.length()>0 && whereKey.length()>0) {
+                    if (newJObject.get(whereKey) == null || ( newJObject.get(whereKey) != null && !whereValue.equals(newJObject.get(whereKey).toString()) )) {
+                        skipRow = true;
+                    }
+                }
+
+                if (!skipRow) {
+
+                    if (fields != null) {
+                        JSONObject tmpJSON = new JSONObject();
+                        for (String fieldsKeyValue : fields) {
+                            fieldsKeyValue = fieldsKeyValue.trim();
+                            List<String> fieldKeyValue = Arrays.asList(fieldsKeyValue.split(","));
+
+                            for (String field : fieldKeyValue) {
+                                List<String> f = Arrays.asList(field.split("="));
+                                String f_key = f.get(0).trim();
+                                String f_val = f.get(1).trim();
+                                
+                                if (!f_key.equals(CONSTANT.$_ID)) {
+                                    if (!f_val.equals("null")) {
+                                        newJObject.put(f_key, f_val);
+                                    } else {
+                                        newJObject.remove(f_key);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    lockedFileReader.write(newJObject.toJSONString());
+                } else {
+                    lockedFileReader.write(line);
+                }
+
+                lockedFileReader.write(System.lineSeparator());
+
+                renameFilename(lockFileName, fileName);
+
+            }
+
+            bufferedReader.close();
+            lockedFileReader.close();
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open table '" + tblName + "'");
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading table '" + tblName + "'");
+        }
+
+       // return result;
+    }
+
+    private static void renameFilename (String lockFileName, String fileName){
+        File oldName = new File(lockFileName);
+        File newName = new File(fileName);
+        oldName.renameTo(newName);
+    }
+    
     private static ArrayList<String> readFromTableFile(String tblName, List<String> fieldsData, String whereCondition) {
         String[] whereConditionArray;
         String whereKey = "";

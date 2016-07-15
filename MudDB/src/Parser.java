@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
  */
 public class Parser {
 
+    private static Constants CONSTANT = new Constants();
+
     public Map<String, Matcher> getQueryCommandIndex(String query){
 
         Map<String, Matcher> parsedObj = new HashMap<>();
@@ -25,6 +27,8 @@ public class Parser {
         Pattern createTablePattern = Pattern.compile("(create)\\s*(table)\\s*(\\w*)\\s*(fields)\\s*(\\w.*)");
         Pattern insertIntoTablePattern = Pattern.compile("(insert)\\s*(into)\\s*(\\w*)\\s*(\\w.*)");
         Pattern selectFromTablePattern = Pattern.compile("(select)\\s*(.*)\\s*(from)\\s*(\\w*)\\s*(?=(where)\\s*(.*)|).*");
+        Pattern updateTablePattern = Pattern.compile("(update)\\s+(\\w+)\\s+(set)\\s+(.*?)(?:\\s+(?:where(.*))?)?$");
+        //Pattern updateTablePattern = Pattern.compile("(update)\\s*(.*)\\s*(set)\\s*(\\w*=\\w*)\\s*(?=(where)\\s*(.*)|).*");
 
         // 2) Matchers
         Matcher showDbsMatcher = showDbsPattern.matcher(query);
@@ -35,6 +39,7 @@ public class Parser {
         Matcher createTableMatcher = createTablePattern.matcher(query);
         Matcher insertIntoTableMatcher = insertIntoTablePattern.matcher(query);
         Matcher selectFromTableMatcher = selectFromTablePattern.matcher(query);
+        Matcher updateTableMatcher = updateTablePattern.matcher(query);
 
         // 3) Create object for response
         if (showDbsMatcher.matches()) {
@@ -51,6 +56,8 @@ public class Parser {
             parsedObj.put("insert_into_table", insertIntoTableMatcher);
         } else if (selectFromTableMatcher.matches()){
             parsedObj.put("select_from_table", selectFromTableMatcher);
+        } else if (updateTableMatcher.matches()){
+            parsedObj.put("update_table", updateTableMatcher);
         }
 
         return parsedObj;
@@ -128,7 +135,7 @@ public class Parser {
         JSONObject resDataObj = new JSONObject();
 
         // Create field ID with unique value
-        resDataObj.put("_$id", UUID.randomUUID().toString());
+        resDataObj.put(CONSTANT.$_ID, UUID.randomUUID().toString());
 
         for(String field : splittedFields){
             field = field.trim();
