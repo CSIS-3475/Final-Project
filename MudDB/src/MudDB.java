@@ -21,13 +21,14 @@ public class MudDB {
         db.runQuery("use db dim");
         //db.runQuery("create table test fields f_name string, l_name string, age int");
 
-       /* db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
+        /*db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
         db.runQuery("insert into test f_name=Eugene");
-        db.runQuery("insert into test f_name=Sean, class=CSIS3450");*/
-        db.runQuery("select * from test where age=318");
+        db.runQuery("insert into test f_name=Sean, class=CSIS3450");
+        db.runQuery("select * from test where age=318");*/
         //db.runQuery("select * from test");
-        db.runQuery("select * from test where age=3");
-        db.runQuery("update test set  class=null");
+        db.runQuery("select * from test where age=38");
+        //db.runQuery("update test set  class=null");
+        db.runQuery("delete from test where age=38");
 
 
         /*do {

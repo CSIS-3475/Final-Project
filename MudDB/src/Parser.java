@@ -28,7 +28,7 @@ public class Parser {
         Pattern insertIntoTablePattern = Pattern.compile("(insert)\\s*(into)\\s*(\\w*)\\s*(\\w.*)");
         Pattern selectFromTablePattern = Pattern.compile("(select)\\s*(.*)\\s*(from)\\s*(\\w*)\\s*(?=(where)\\s*(.*)|).*");
         Pattern updateTablePattern = Pattern.compile("(update)\\s+(\\w+)\\s+(set)\\s+(.*?)(?:\\s+(?:where(.*))?)?$");
-        //Pattern updateTablePattern = Pattern.compile("(update)\\s*(.*)\\s*(set)\\s*(\\w*=\\w*)\\s*(?=(where)\\s*(.*)|).*");
+        Pattern deleteFromTablePattern = Pattern.compile("(delete)\\s+(from)\\s+(\\w+)\\s+(where)\\s+(.*?)?$");
 
         // 2) Matchers
         Matcher showDbsMatcher = showDbsPattern.matcher(query);
@@ -40,6 +40,7 @@ public class Parser {
         Matcher insertIntoTableMatcher = insertIntoTablePattern.matcher(query);
         Matcher selectFromTableMatcher = selectFromTablePattern.matcher(query);
         Matcher updateTableMatcher = updateTablePattern.matcher(query);
+        Matcher deleteFromTableMatcher = deleteFromTablePattern.matcher(query);
 
         // 3) Create object for response
         if (showDbsMatcher.matches()) {
@@ -58,6 +59,8 @@ public class Parser {
             parsedObj.put("select_from_table", selectFromTableMatcher);
         } else if (updateTableMatcher.matches()){
             parsedObj.put("update_table", updateTableMatcher);
+        } else if (deleteFromTableMatcher.matches()){
+            parsedObj.put("delete_from_table", deleteFromTableMatcher);
         }
 
         return parsedObj;
@@ -90,47 +93,11 @@ public class Parser {
         return jsonText;
     }
 
-    /*private String readMetaFile(String activeDbName, String tblName){
-
-        String line="";
-        String res="";
-        String dirName = Constants.DEFAULT_PATH + "/" + activeDbName;
-        String fileName = dirName + "/" + tblName + Constants.TABLE_META_SUFFIX + Constants.JSON_SUFFIX;
-
-        try {
-            FileReader fileReader = new FileReader(fileName);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            while((line = bufferedReader.readLine()) != null) {
-                res += line;
-            }
-            bufferedReader.close();
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println("Unable to open file '" + fileName + "'");
-        }
-        catch(IOException ex) {
-            System.out.println("Error reading file '" + fileName + "'");
-        }
-        return res;
-    }
-*/
-
     public String parseInsertingData(String activeDbName, String tblName, String fields){
 
-       // String metaData = readMetaFile(activeDbName, tblName);
         List<String> splittedFields = Arrays.asList(fields.split(","));
 
         JSONParser parser = new JSONParser();
-
-       /* Object metaObj = null;
-        try {
-            metaObj = parser.parse(metaData);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        JSONObject jMetaObject = (JSONObject) metaObj;
-        */
 
         JSONObject resDataObj = new JSONObject();
 
@@ -145,24 +112,12 @@ public class Parser {
 
             fieldValue = fieldValue.replaceAll("\'","");
             resDataObj.put(fieldName, fieldValue);
-
-            /*String fieldType = (String) jMetaObject.get(fieldName);
-            if (fieldType == null) {
-                fieldType = "string";
-            }
-            System.out.println("--- " + fieldType + " = " + fieldName);
-
-            switch (fieldType){
-                case "int":
-                    resDataObj.put(fieldName, new Integer(fieldValue));
-                    break;
-                default:
-                    // Added as String by default
-                    fieldValue = fieldValue.replaceAll("\'","");
-                    resDataObj.put(fieldName, fieldValue);
-            }*/
         }
-
+        if (resDataObj.size() == 0) {
+            System.out.println("There are no records for insertion has been found.");
+        } else {
+            System.out.println("Inserted " + resDataObj.size() + " records");
+        }
         return resDataObj.toString();
 
     }

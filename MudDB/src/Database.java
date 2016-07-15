@@ -15,22 +15,6 @@ public class Database {
     private static Constants CONSTANT = new Constants();
     private static DatabaseService dbService = new DatabaseService();
 
-   /* private static void createDB(String dbName){
-        File theDir = new File(CONSTANT.DEFAULT_PATH + "/" + dbName);
-
-        if (!theDir.exists()) {
-            try{
-                theDir.mkdir();
-                System.out.println("Database <" + dbName + "> has been created");
-            }
-            catch(SecurityException se){
-                System.out.println("ERROR: " + se.toString());
-            }
-        } else {
-            System.out.println("Warning: Database <" + dbName + "> is already exists.");
-        }
-    }*/
-
 
     public static void runQuery(String query){
         String whereCondition;
@@ -38,10 +22,6 @@ public class Database {
         Map<String, Matcher> parsedObj = new HashMap<>();
 
         parsedObj = qp.getQueryCommandIndex(query);
-
-
-
-        //System.out.println(query + "  =  " + parsedObj.toString());
 
         // Get action and matches from parsed query
         Map.Entry<String,Matcher> entry = parsedObj.entrySet().iterator().next();
@@ -66,6 +46,9 @@ public class Database {
                 break;
             case "insert_into_table" :
                 insertIntoTable(matches.group(3), matches.group(4));
+                break;
+            case "delete_from_table" :
+                deleteFromTable(matches.group(3), matches.group(5));
                 break;
             case "select_from_table" :
                 whereCondition = null;
@@ -228,40 +211,22 @@ public class Database {
                 createTable(tblName, fieldsData);
             }
 
-            //if (theDir.exists()) {
-
-
-                try(FileWriter fw = new FileWriter(fileName, true);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    PrintWriter out = new PrintWriter(bw))
-                {
-                    Parser p = new Parser();
-                    out.println(p.parseInsertingData(activeDbName, tblName, fieldsData));
-                    out.close();
-                } catch (IOException e) {
-                    //exception handling left as an exercise for the reader
-                }
-
-
-
-               /* try {
-                    Parser p = new Parser();
-                    Files.write(Paths.get(fileName), p.parseInsertingData(activeDbName, tblName, fieldsData).getBytes(), StandardOpenOption.APPEND);
-                }catch (IOException e) {
-                    //exception handling left as an exercise for the reader
-                    System.out.println("ERROR: Incorrect data or syntax");
-                }*/
-/*            } else {
-                System.out.println("ERROR: Table <" + tblName + "> doesn't exist.");
-            }*/
+            try(FileWriter fw = new FileWriter(fileName, true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw))
+            {
+                Parser p = new Parser();
+                out.println(p.parseInsertingData(activeDbName, tblName, fieldsData));
+                out.close();
+            } catch (IOException e) {
+                //exception handling left as an exercise for the reader
+            }
         } else {
             System.out.println("Warning: No database selected.");
         }
     }
 
     private static void selectFromTable(String fieldsData, String tblName, String whereCondition){
-
-        //System.out.println("where is " + whereCondition);
 
         fieldsData = fieldsData.trim();
 
@@ -280,7 +245,11 @@ public class Database {
     }
 
     private static void outputResultOfSelection(ArrayList<String> result){
-        System.out.println(result.toString());
+        if (result.size() == 0) {
+            System.out.println("No records has been found.");
+        } else {
+            System.out.println(result.toString());
+        }
     }
 
     private static void updateTable(String fieldsData, String tblName, String whereCondition){
@@ -350,7 +319,7 @@ public class Database {
                                 List<String> f = Arrays.asList(field.split("="));
                                 String f_key = f.get(0).trim();
                                 String f_val = f.get(1).trim();
-                                
+
                                 if (!f_key.equals(CONSTANT.$_ID)) {
                                     if (!f_val.equals("null")) {
                                         newJObject.put(f_key, f_val);
@@ -386,12 +355,89 @@ public class Database {
        // return result;
     }
 
+    private static void deleteFromTable(String tblName, String whereCondition){
+
+        tblName = tblName.trim();
+        whereCondition = whereCondition != null ? whereCondition.trim() : null;
+
+        if (whereCondition == null) {
+            System.out.println("Error: No WHERE clause has been provided.");
+            return;
+        }
+
+        List<String> whereConditionKeyValue = Arrays.asList(whereCondition.split("="));
+
+        String whereKey = whereConditionKeyValue.get(0);
+        String whereValue = whereConditionKeyValue.get(1);
+        Boolean skipRow;
+
+        String fileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.JSON_SUFFIX;
+        String lockFileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.TEMP_TABLE_FILE_SUFFIX;
+
+        String line = null;
+
+        int deletedRowsCntr = 0;
+
+        try {
+            // FileReader reads text files in the default encoding.
+            FileWriter lockedFileReader = new FileWriter(lockFileName);
+            FileReader fileReader = new FileReader(fileName);
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+            while((line = bufferedReader.readLine()) != null) {
+                skipRow = false;
+
+                //row = new ArrayList<>();
+                JSONParser parser = new JSONParser();
+
+                //convert from JSON string to JSONObject
+                JSONObject newJObject = null;
+                try {
+                    newJObject = (JSONObject) parser.parse(line);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                if (newJObject.get(whereKey) != null && whereValue.equals(newJObject.get(whereKey).toString())) {
+                    skipRow = true;
+                    deletedRowsCntr++;
+                }
+
+                if (!skipRow) {
+                    lockedFileReader.write(line);
+                    lockedFileReader.write(System.lineSeparator());
+                }
+
+                renameFilename(lockFileName, fileName);
+
+            }
+
+            bufferedReader.close();
+            lockedFileReader.close();
+
+            if (deletedRowsCntr==0) {
+                System.out.println("No records has been found.");
+            } else {
+                System.out.println("Removed " + deletedRowsCntr + " records.");
+            }
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open table '" + tblName + "'");
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading table '" + tblName + "'");
+        }
+
+    }
+
     private static void renameFilename (String lockFileName, String fileName){
         File oldName = new File(lockFileName);
         File newName = new File(fileName);
         oldName.renameTo(newName);
     }
-    
+
     private static ArrayList<String> readFromTableFile(String tblName, List<String> fieldsData, String whereCondition) {
         String[] whereConditionArray;
         String whereKey = "";
