@@ -26,9 +26,9 @@ public class MudDB {
         db.runQuery("insert into test f_name=Sean, class=CSIS3450");
         db.runQuery("select * from test where age=318");*/
         //db.runQuery("select * from test");
-        db.runQuery("select * from test where age=38");
-        //db.runQuery("update test set  class=null");
-        db.runQuery("delete from test where age=38");
+        //db.runQuery("select * from test where age=123");
+        db.runQuery("update test set age=2 where age=2");
+        //db.runQuery("delete from test where age=38");
 
 
         /*do {

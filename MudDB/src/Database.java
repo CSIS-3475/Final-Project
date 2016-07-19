@@ -62,7 +62,7 @@ public class Database {
             case "update_table" :
                 whereCondition = null;
                 try {
-                    whereCondition = matches.group(6);
+                    whereCondition = matches.group(5);
                 } catch (Exception e){
 
                 }
@@ -253,7 +253,6 @@ public class Database {
     }
 
     private static void updateTable(String fieldsData, String tblName, String whereCondition){
-
         fieldsData = fieldsData.trim();
         tblName = tblName.trim();
         whereCondition = whereCondition != null ? whereCondition.trim() : null;
@@ -264,6 +263,7 @@ public class Database {
         String whereKey = "";
         String whereValue = "";
         Boolean skipRow;
+        int updatedRows = 0;
 
         // The name of the file to open.
         String fileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/" + tblName + CONSTANT.TABLE_SUFFIX + CONSTANT.JSON_SUFFIX;
@@ -330,7 +330,7 @@ public class Database {
                             }
                         }
                     }
-
+                    updatedRows++;
                     lockedFileReader.write(newJObject.toJSONString());
                 } else {
                     lockedFileReader.write(line);
@@ -344,6 +344,12 @@ public class Database {
 
             bufferedReader.close();
             lockedFileReader.close();
+
+            if (updatedRows==0) {
+                System.out.println("No records have been updated.");
+            } else {
+                System.out.println(updatedRows + " records have been updated.");
+            }
         }
         catch(FileNotFoundException ex) {
             System.out.println("Unable to open table '" + tblName + "'");
