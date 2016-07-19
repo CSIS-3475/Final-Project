@@ -18,7 +18,8 @@ public class MudDB {
 
 
 
-        db.runQuery("use db dim");
+       // db.runQuery("use db dim");
+        //db.runQuery("use db dim");
         //db.runQuery("create table test fields f_name string, l_name string, age int");
 
         /*db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
@@ -27,23 +28,30 @@ public class MudDB {
         db.runQuery("select * from test where age=318");*/
         //db.runQuery("select * from test");
         //db.runQuery("select * from test where age=123");
-        db.runQuery("update test set age=2 where age=2");
+        //db.runQuery("update test set age=2 where age=2");
         //db.runQuery("delete from test where age=38");
 
 
-        /*do {
+        do {
 
-            cmd = getInput();
+            try{
+                cmd = getInput();
 
-            if (cmd.compareTo(c.EXIT_WORD) != 0) {
-                System.out.println(c.PROJECT_NAME + "> " + cmd);
+                if (cmd.compareTo(c.EXIT_WORD) != 0) {
+                    System.out.println(c.PROJECT_NAME + "> " + cmd);
 
-                db.runQuery(cmd);
+                    db.runQuery(cmd);
 
-            } else {
-                done = true;
+                } else {
+                    done = true;
+                }
+            } catch(Exception ex){
+                System.out.println("\n==================================================================================");
+                System.out.println("The command is invalid or spelled incorrectly. Please follow the DB documentation.");
+                System.out.println("==================================================================================\n");
             }
-        } while (!done);*/
+
+        } while (!done);
 
         db.disconnect();
     }
