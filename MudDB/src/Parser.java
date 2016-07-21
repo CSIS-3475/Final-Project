@@ -24,6 +24,7 @@ public class Parser {
         Pattern useDbPattern = Pattern.compile("(use)\\s*(db)\\s*(\\w.*)");
         Pattern dropDbPattern = Pattern.compile("(drop)\\s*(db)\\s*(\\w.*)");
 
+        Pattern dropTablePattern = Pattern.compile("(drop)\\s*(table)\\s*(\\w.*)");
         Pattern createTablePattern = Pattern.compile("(create)\\s*(table)\\s*(\\w*)\\s*(fields)\\s*(\\w.*)");
         Pattern insertIntoTablePattern = Pattern.compile("(insert)\\s*(into)\\s*(\\w*)\\s*(\\w.*)");
         Pattern selectFromTablePattern = Pattern.compile("(select)\\s*(.*)\\s*(from)\\s*(\\w*)\\s*(?=(where)\\s*(.*)|).*");
@@ -36,6 +37,7 @@ public class Parser {
         Matcher useDbMatcher = useDbPattern.matcher(query);
         Matcher dropDbMatcher = dropDbPattern.matcher(query);
 
+        Matcher dropTableMatcher = dropTablePattern.matcher(query);
         Matcher createTableMatcher = createTablePattern.matcher(query);
         Matcher insertIntoTableMatcher = insertIntoTablePattern.matcher(query);
         Matcher selectFromTableMatcher = selectFromTablePattern.matcher(query);
@@ -61,6 +63,9 @@ public class Parser {
             parsedObj.put("update_table", updateTableMatcher);
         } else if (deleteFromTableMatcher.matches()){
             parsedObj.put("delete_from_table", deleteFromTableMatcher);
+        }
+        else if(dropTableMatcher.matches()){
+            parsedObj.put("drop_table" , dropTableMatcher);
         }
 
         return parsedObj;
