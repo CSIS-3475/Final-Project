@@ -45,7 +45,7 @@ public class Database {
                 dropDb(matches.group(3));
                 break;
             case "create_table" :
-                createTable(matches.group(3), matches.group(5));
+                createTable(matches.group(3));
                 break;
             case "insert_into_table" :
                 insertIntoTable(matches.group(3), matches.group(4));
@@ -193,27 +193,44 @@ public class Database {
         }
     }
 
-    private static void createTable(String tblName, String fields){
+    private static boolean ifTableExists(String tblName){
+        String fileName = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/";// + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX;
+        File theDir = new File(fileName);
+        for (String f : theDir.list()) {
+            String tableName = f.replace(Constants.TABLE_SUFFIX,"").replace(Constants.JSON_SUFFIX, "");
+            if ( tableName.equalsIgnoreCase( tblName ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void createTable(String tblName){
 
         if (ifActiveDbExists()) {
-            String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
-            File theDir = new File(dirName);
 
-            if (theDir.exists()) {
-                try {
+            if (ifTableExists(tblName)) {
+                System.out.println("Table <" + tblName + "> already exists in database <" + activeDbName + ">");
+            } else {
 
-                    // Create table file
-                    PrintWriter writer = null;
+                String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
+                File theDir = new File(dirName);
+
+                if (theDir.exists()) {
                     try {
-                        writer = new PrintWriter(dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX, "UTF-8");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    writer.close();
 
-                    // Create table meta file
+                        // Create table file
+                        PrintWriter writer = null;
+                        try {
+                            writer = new PrintWriter(dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX, "UTF-8");
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        writer.close();
+
+                    /*// Create table meta file
                     PrintWriter writer_meta = null;
                     try {
                         writer_meta = new PrintWriter(dirName + "/" + tblName + Constants.TABLE_META_SUFFIX + Constants.JSON_SUFFIX, "UTF-8");
@@ -221,18 +238,19 @@ public class Database {
                         e.printStackTrace();
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
-                    Parser p = new Parser();
+                    /*Parser p = new Parser();
                     writer_meta.println(p.parseFields(fields));
-                    writer_meta.close();
+                    writer_meta.close();*/
 
-                    System.out.println("Table <" + tblName + "> has been created");
-                } catch (SecurityException se) {
-                    System.out.println("ERROR: " + se.toString());
+                        System.out.println("Table <" + tblName + "> has been created");
+                    } catch (SecurityException se) {
+                        System.out.println("ERROR: " + se.toString());
+                    }
+                } else {
+                    System.out.println("Warning: Table <" + tblName + "> is already exists.");
                 }
-            } else {
-                System.out.println("Warning: Table <" + tblName + "> is already exists.");
             }
         }
     }
@@ -245,7 +263,7 @@ public class Database {
             String fileName = dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX;
 
             if (!theDir.exists()) {
-                createTable(tblName, fieldsData);
+                createTable(tblName);
             }
 
             try(FileWriter fw = new FileWriter(fileName, true);

@@ -14,11 +14,16 @@ public class MudDB {
         db.connect();
 
 
-
-       // db.runQuery("use db apple");
-        db.runQuery("show tables");
+/*      db.runQuery("show tables");
         db.runQuery("use db apple");
         db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=1");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=2");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=8");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=3");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=5");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=6");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=3");*/
        // db.runQuery("drop table test");
        // db.runQuery("drop db samsung");
         //db.runQuery("create table test fields f_name string, l_name string, age int");
@@ -32,8 +37,7 @@ public class MudDB {
         //db.runQuery("update test set age=2 where age=2");
         //db.runQuery("delete from test where age=38");
 
-
-       /* do {
+        do {
 
             try{
                 cmd = getInput();
@@ -52,7 +56,7 @@ public class MudDB {
                 System.out.println("==================================================================================\n");
             }
 
-        } while (!done);*/
+        } while (!done);
 
         db.disconnect();
     }

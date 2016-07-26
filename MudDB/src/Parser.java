@@ -26,7 +26,7 @@ public class Parser {
         Pattern dropDbPattern = Pattern.compile("(drop)\\s*(db)\\s*(\\w.*)");
 
         Pattern dropTablePattern = Pattern.compile("(drop)\\s*(table)\\s*(\\w.*)");
-        Pattern createTablePattern = Pattern.compile("(create)\\s*(table)\\s*(\\w*)\\s*(fields)\\s*(\\w.*)");
+        Pattern createTablePattern = Pattern.compile("(create)\\s*(table)\\s*(\\w*)");
         Pattern insertIntoTablePattern = Pattern.compile("(insert)\\s*(into)\\s*(\\w*)\\s*(\\w.*)");
         Pattern selectFromTablePattern = Pattern.compile("(select)\\s*(.*)\\s*(from)\\s*(\\w*)\\s*(?=(where)\\s*(.*)|).*");
         Pattern updateTablePattern = Pattern.compile("(update)\\s+(\\w+)\\s+(set)\\s+(.*?)(?:\\s+(?:where(.*))?)?$");
