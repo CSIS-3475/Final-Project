@@ -59,6 +59,9 @@ public class Database {
                 }
                 selectFromTable(matches.group(2), matches.group(4), whereCondition);
                 break;
+            case "drop_table":
+                dropTable(matches.group(3));
+                break;
             case "update_table" :
                 whereCondition = null;
                 try {
@@ -114,15 +117,18 @@ public class Database {
 
     private static void useDb(String dbName){
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
+        boolean found = false;
 
         for (String dir : directories){
             if (dir.equals(dbName)){
                 System.out.println("Database <" + dbName + "> is in use");
                 activeDbName = dbName;
+                found = true;
             }
-            else{
-                System.out.println("Database <" + dbName + "> was not found");
-            }
+        }
+
+        if (found == false){
+            System.out.println("Database <" + dbName + "> was not found");
         }
     }
 
@@ -151,6 +157,29 @@ public class Database {
         }
         else {
             System.out.println("No databases were found!"); // not working
+        }
+    }
+
+    public static void dropTable(String tableName){
+
+        File curFile = new File (CONSTANT.DEFAULT_PATH, activeDbName);
+        File[] contents = curFile.listFiles();
+        boolean found = false;
+        String startPath = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/";
+        String endPath = CONSTANT.TABLE_SUFFIX + ".json";
+
+        if (contents != null){
+            for (File f : contents){
+                if (f.toString().equals( startPath+ tableName + endPath)){
+                    f.delete();
+                    System.out.println("Table with the name <" + tableName + "> was successfully deleted");
+                    found = true;
+                }
+            }
+
+            if (found == false){
+                System.out.println("Table with the name <" + tableName + "> was not found" );
+            }
         }
     }
 
