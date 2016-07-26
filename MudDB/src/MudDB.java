@@ -7,19 +7,16 @@ public class MudDB {
 
     public MudDB(){
         Constants c = new Constants();
-
         String cmd;
         Boolean done = false;
-        //Map<String, String> queryData;
-
         Database db = new Database();
 
         db.connect();
 
 
 
-       // db.runQuery("use db dim");
-        //db.runQuery("use db dim");
+        db.runQuery("use db apple");
+        db.runQuery("show tables");
         //db.runQuery("create table test fields f_name string, l_name string, age int");
 
         /*db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
@@ -32,7 +29,7 @@ public class MudDB {
         //db.runQuery("delete from test where age=38");
 
 
-        do {
+       /* do {
 
             try{
                 cmd = getInput();
@@ -51,7 +48,7 @@ public class MudDB {
                 System.out.println("==================================================================================\n");
             }
 
-        } while (!done);
+        } while (!done);*/
 
         db.disconnect();
     }

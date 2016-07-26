@@ -35,6 +35,9 @@ public class Database {
             case "show_dbs" :
                 showDbs();
                 break;
+            case "show_tables" :
+                showTables();
+                break;
             case "use_db" :
                 useDb(matches.group(3));
                 break;
@@ -119,6 +122,7 @@ public class Database {
             if (dir.equals(dbName)){
                 System.out.println("Database <" + dbName + "> is in use");
                 activeDbName = dbName;
+                break;
             }
             else{
                 System.out.println("Database <" + dbName + "> was not found");
@@ -436,6 +440,31 @@ public class Database {
             System.out.println("Error reading table '" + tblName + "'");
         }
 
+    }
+
+    private static void showTables() {
+
+        if (activeDbName == null) {
+            System.out.println("No database in use");
+        } else {
+            String path = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
+            String[] tables = dbService.getFilesList(path);
+            if (tables.length == 0){
+                System.out.println("No tables found in database <" + activeDbName + ">");
+            } else {
+                int tblCount = 0;
+                for (String tbl : tables) {
+                    if (!tbl.contains(CONSTANT.TABLE_SUFFIX)) {
+                        continue;
+                    }
+                    tbl = tbl.replace(CONSTANT.JSON_SUFFIX,"");
+                    tbl = tbl.replace(CONSTANT.TABLE_SUFFIX,"");
+                    System.out.println(tbl);
+                    tblCount++;
+                }
+                System.out.println("\nFound " + tblCount + " tables in the database <" + activeDbName + ">");
+            }
+        }
     }
 
     private static void renameFilename (String lockFileName, String fileName){

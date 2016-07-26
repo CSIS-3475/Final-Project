@@ -20,6 +20,7 @@ public class Parser {
 
         // 1) Regex patterns
         Pattern showDbsPattern = Pattern.compile("(show)\\s*(dbs)");
+        Pattern showTablesPattern = Pattern.compile("(show)\\s*(tables)");
         Pattern createDbPattern = Pattern.compile("(create)\\s*(db)\\s*(\\w.*)");
         Pattern useDbPattern = Pattern.compile("(use)\\s*(db)\\s*(\\w.*)");
         Pattern dropDbPattern = Pattern.compile("(drop)\\s*(db)\\s*(\\w.*)");
@@ -31,6 +32,7 @@ public class Parser {
         Pattern deleteFromTablePattern = Pattern.compile("(delete)\\s+(from)\\s+(\\w+)\\s+(where)\\s+(.*?)?$");
 
         // 2) Matchers
+        Matcher showTablesMatcher = showTablesPattern.matcher(query);
         Matcher showDbsMatcher = showDbsPattern.matcher(query);
         Matcher createDbMatcher = createDbPattern.matcher(query);
         Matcher useDbMatcher = useDbPattern.matcher(query);
@@ -45,6 +47,8 @@ public class Parser {
         // 3) Create object for response
         if (showDbsMatcher.matches()) {
             parsedObj.put("show_dbs" , showDbsMatcher);
+        } else if (showTablesMatcher.matches()) {
+            parsedObj.put("show_tables" , showTablesMatcher);
         } else if (createDbMatcher.matches()) {
             parsedObj.put("create_db" , createDbMatcher);
         } else if (useDbMatcher.matches()){
