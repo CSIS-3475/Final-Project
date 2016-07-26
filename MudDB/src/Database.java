@@ -62,6 +62,9 @@ public class Database {
                 }
                 selectFromTable(matches.group(2), matches.group(4), whereCondition);
                 break;
+            case "drop_table":
+                dropTable(matches.group(3));
+                break;
             case "update_table" :
                 whereCondition = null;
                 try {
@@ -123,8 +126,7 @@ public class Database {
                 System.out.println("Database <" + dbName + "> is in use");
                 activeDbName = dbName;
                 break;
-            }
-            else{
+            } else {
                 System.out.println("Database <" + dbName + "> was not found");
             }
         }
@@ -158,9 +160,42 @@ public class Database {
         }
     }
 
+    public static boolean ifActiveDbExists(){
+        boolean res = true;
+        if ( activeDbName == null ) {
+            System.out.println("Warning: No database selected.");
+            res = false;
+        }
+        return res;
+    }
+
+    public static void dropTable(String tableName){
+
+        if ( ifActiveDbExists() ) {
+            File curFile = new File (CONSTANT.DEFAULT_PATH, activeDbName);
+            File[] contents = curFile.listFiles();
+            String startPath = CONSTANT.DEFAULT_PATH + "/" + activeDbName + "/";
+            String endPath = CONSTANT.TABLE_SUFFIX + CONSTANT.JSON_SUFFIX;
+            boolean found = false;
+
+            if (contents != null){
+                for (File f : contents){
+                    if (f.toString().equals( startPath + tableName + endPath)){
+                        f.delete();
+                        System.out.println("Table with the name <" + tableName + "> was successfully deleted");
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    System.out.println("Table with the name <" + tableName + "> was not found" );
+                }
+            }
+        }
+    }
+
     private static void createTable(String tblName, String fields){
 
-        if (activeDbName != null) {
+        if (ifActiveDbExists()) {
             String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
             File theDir = new File(dirName);
 
@@ -199,14 +234,12 @@ public class Database {
             } else {
                 System.out.println("Warning: Table <" + tblName + "> is already exists.");
             }
-        } else {
-            System.out.println("Warning: No database selected.");
         }
     }
 
     private static void insertIntoTable(String tblName, String fieldsData){
 
-        if (activeDbName != null) {
+        if (ifActiveDbExists()) {
             String dirName = CONSTANT.DEFAULT_PATH + "/" + activeDbName;
             File theDir = new File(dirName);
             String fileName = dirName + "/" + tblName + Constants.TABLE_SUFFIX + Constants.JSON_SUFFIX;
@@ -225,8 +258,6 @@ public class Database {
             } catch (IOException e) {
                 //exception handling left as an exercise for the reader
             }
-        } else {
-            System.out.println("Warning: No database selected.");
         }
     }
 

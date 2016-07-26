@@ -15,8 +15,12 @@ public class MudDB {
 
 
 
-        db.runQuery("use db apple");
+       // db.runQuery("use db apple");
         db.runQuery("show tables");
+        db.runQuery("use db apple");
+        db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
+       // db.runQuery("drop table test");
+       // db.runQuery("drop db samsung");
         //db.runQuery("create table test fields f_name string, l_name string, age int");
 
         /*db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
