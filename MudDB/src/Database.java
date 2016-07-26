@@ -120,21 +120,25 @@ public class Database {
 
     private static void useDb(String dbName){
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
+        boolean found = false;
 
         for (String dir : directories){
             if (dir.equals(dbName)){
                 System.out.println("Database <" + dbName + "> is in use");
                 activeDbName = dbName;
-                break;
-            } else {
-                System.out.println("Database <" + dbName + "> was not found");
+                found = true;
             }
+
+        }
+        if (!found){
+            System.out.println("Database <" + dbName + "> was not found");
         }
     }
 
     public static void dropDb(String dbName) {
 
         String[] directories = dbService.getFoldersList(CONSTANT.DEFAULT_PATH);
+        boolean found = false;
 
         if (directories.length != 0) {
             for (String dir : directories) {
@@ -148,11 +152,12 @@ public class Database {
                     }
                     curFile.delete();
                     System.out.println("Database <" + dbName + "> was successfully deleted");
+                    found = true;
+                }
 
-                }
-                else if (dir.lastIndexOf(dbName) == -1) {
-                    System.out.println("Database with name <" + dbName + "> was not found!");
-                }
+            }
+            if (!found) {
+                System.out.println("Database with name <" + dbName + "> was not found!");
             }
         }
         else {
@@ -492,7 +497,6 @@ public class Database {
     }
 
     private static void showTables() {
-
         if (activeDbName == null) {
             System.out.println("No database in use");
         } else {

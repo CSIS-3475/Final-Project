@@ -14,6 +14,7 @@ public class MudDB {
         db.connect();
 
 
+
 /*      db.runQuery("show tables");
         db.runQuery("use db apple");
         db.runQuery("insert into test f_name=Eugene, l_name=Vilder, age=38");
